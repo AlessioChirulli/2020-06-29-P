@@ -8,6 +8,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.PremierLeague.model.Connessione;
+import it.polito.tdp.PremierLeague.model.Match;
 import it.polito.tdp.PremierLeague.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -39,30 +42,59 @@ public class FXMLController {
     private TextField txtMinuti; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbMese"
-    private ComboBox<?> cmbMese; // Value injected by FXMLLoader
+    private ComboBox<Integer> cmbMese; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbM1"
-    private ComboBox<?> cmbM1; // Value injected by FXMLLoader
+    private ComboBox<Match> cmbM1; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbM2"
-    private ComboBox<?> cmbM2; // Value injected by FXMLLoader
+    private ComboBox<Match> cmbM2; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
 
     @FXML
     void doConnessioneMassima(ActionEvent event) {
-    	
+    	txtResult.setText(model.connessioneMax());
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
-    	
+    	txtResult.clear();
+    	cmbM1.getItems().clear();
+		cmbM2.getItems().clear();
+    	try {
+    		int minuti=Integer.parseInt(txtMinuti.getText());
+    		if(cmbMese.getValue()!=null) {
+    			int mese=cmbMese.getValue();
+    			txtResult.setText(model.creaGrafo(minuti, mese));
+    			cmbM1.getItems().addAll(model.getVertex());
+    			cmbM2.getItems().addAll(model.getVertex());
+    			btnConnessioneMassima.setDisable(false);
+    			btnCollegamento.setDisable(false);
+    		}else {
+    			txtResult.setText("Inserisci un mese");
+    		}
+    	}catch(NumberFormatException nbe) {
+    		txtResult.setText("Inserisci un valore valido");
+    	}
     }
 
     @FXML
     void doCollegamento(ActionEvent event) {
-    	
+    txtResult.clear();
+    Match m1=cmbM1.getValue();
+    Match m2=cmbM2.getValue();
+    if(m1!=null && m2!=null) {
+    	List<Connessione> result = model.getCammino(m1, m2);
+    	txtResult.appendText("Cammino tra "+m1+" e "+m2+"\n");
+    	for(Connessione c: result) {
+    		txtResult.appendText(c.getM()+" - "+c.getPeso()+"\n");
+    	}
+    	txtResult.appendText("Peso: "+model.getPeso());
+    }else {
+    	txtResult.setText("Inserisci due match");
+    }
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -79,7 +111,11 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
-  
+    	for (int i=1;i<=12;i++) {
+    		cmbMese.getItems().add(i);
+    	}
+    	btnConnessioneMassima.setDisable(true);
+    	btnCollegamento.setDisable(true);
     }
     
     
